@@ -51,7 +51,20 @@ def forecast(req: ForecastRequest):
         train_p = train.rename(columns={"date":"ds","total_revenue":"y"})[["ds","y"]]
         m.fit(train_p)
 
-        future = m.make_future_dataframe(periods=req.horizon_days, freq="D", include_history=False)
+        # gera mais dias que o necessário
+        future = m.make_future_dataframe(
+            periods=req.horizon_days * 2,
+            freq="D",
+            include_history=False
+        )
+
+        # remove weekends
+        future["dow"] = future["ds"].dt.weekday
+        future = future[future["dow"] < 5].drop(columns=["dow"])
+
+        # garante horizonte exato
+        future = future.head(req.horizon_days)
+
         fc = m.predict(future)[["ds","yhat","yhat_lower","yhat_upper"]]
 
         out = []
