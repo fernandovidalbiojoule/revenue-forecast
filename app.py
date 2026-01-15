@@ -13,6 +13,11 @@ except Exception:
 
 app = FastAPI(title="Revenue Forecast Service")
 
+@app.get("/")
+def healthcheck():
+    return {"status": "ok"}
+
+
 class Row(BaseModel):
     date: str
     total_revenue: float
