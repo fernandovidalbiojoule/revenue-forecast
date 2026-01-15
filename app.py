@@ -91,3 +91,26 @@ def forecast(req: ForecastRequest):
         })
 
     return {"model":"dow_baseline", "last_observed_date": last_date.strftime("%Y-%m-%d"), "forecast": out}
+
+
+from datetime import date
+import calendar
+
+class MTDForecastRequest(BaseModel):
+    revenue_mtd: float
+
+@app.post("/forecast/mtd")
+def forecast_mtd(req: MTDForecastRequest):
+    today = date.today()
+    day_today = today.day
+    days_in_month = calendar.monthrange(today.year, today.month)[1]
+
+    forecast_value = (req.revenue_mtd / day_today) * days_in_month
+
+    return {
+        "model": "run_rate_mtd",
+        "date": today.strftime("%Y-%m-%d"),
+        "revenue_mtd": req.revenue_mtd,
+        "forecast_month": round(forecast_value, 2)
+    }
+
